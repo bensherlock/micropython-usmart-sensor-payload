@@ -70,6 +70,8 @@ class SensorPayload:
         return None
 
 
+from pybd_expansion.main.powermodule import PowerModule
+
 import pybd_expansion.main.bme280 as bme280
 from pybd_expansion.main.bme280 import BME280
 
@@ -104,6 +106,8 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr_accel = None
         self._lsm303agr_magneto = None
 
+        self._powermodule_vbatt = Nona
+
 
         pass
 
@@ -124,6 +128,9 @@ class PebSensorPayload(SensorPayload):
         # i2c = machine.I2C(1, freq=400000)  # machine.I2C
         i2c = pyb.I2C(1)  # pyb.I2C
         i2c.init(pyb.I2C.MASTER, baudrate=400000)  # pyb.I2C
+
+        powermodule = PowerModule()
+        self._powermodule_vbatt = powermodule.get_vbatt_reading()
 
         # delay
         pyb.delay(10)
@@ -230,12 +237,12 @@ class PebSensorPayload(SensorPayload):
         packed_bytes = struct.pack("ffffffffff", self._bme280_temperature, self._bme280_pressure, self._bme280_humidity,
                                    self._lsm303agr_accel[0], self._lsm303agr_accel[1], self._lsm303agr_accel[2],
                                    self._lsm303agr_magneto[0], self._lsm303agr_magneto[1], self._lsm303agr_magneto[2],
-                                   self._lsm303agr_temperature)
+                                   self._lsm303agr_temperature, self._powermodule_vbatt)
         # To unpack
         #bme280_temperature, bme280_pressure, bme280_humidity, \
         #lsm303agr_accel_x, lsm303agr_accel_y, lsm303agr_accel_z, \
         #lsm303agr_magneto_x, lsm303agr_magneto_y, lsm303agr_magneto_z, \
-        #lsm303agr_temperature = struct.unpack("ffffffffff", packed_bytes)
+        #lsm303agr_temperature, vbatt = struct.unpack("ffffffffff", packed_bytes)
 
         return packed_bytes
 
@@ -250,7 +257,8 @@ class PebSensorPayload(SensorPayload):
                                "magnetometer": {"x": self._lsm303agr_magneto[0],
                                                 "y": self._lsm303agr_magneto[1],
                                                 "z": self._lsm303agr_magneto[2]},
-                               "temperature": self._lsm303agr_temperature}}
+                               "temperature": self._lsm303agr_temperature},
+                 "vbatt": self._powermodule_vbatt}
 
         return jason
 
