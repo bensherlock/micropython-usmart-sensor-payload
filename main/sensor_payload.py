@@ -106,7 +106,7 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr_accel = None
         self._lsm303agr_magneto = None
 
-        self._powermodule_vbatt = Nona
+        self._powermodule_vbatt = None
 
 
         pass
