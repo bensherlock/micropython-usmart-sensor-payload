@@ -143,6 +143,13 @@ class PebSensorPayload(SensorPayload):
         self._bme280_temperature = None
         self._bme280_humidity = None
 
+        # Stop any previous acquisitions
+        self._bme280.set_ctrl_meas_reg(mode=bme280.MODE_SLEEP, osrs_p=bme280.OSRS_OVERSAMPLE_X_1,
+                                       osrs_t=bme280.OSRS_OVERSAMPLE_X_1)
+
+        # delay
+        pyb.delay(10)
+
         # Setup to take measurements
         self._bme280.set_ctrl_hum_reg(osrs_h=bme280.OSRS_OVERSAMPLE_X_1)
         self._bme280.set_ctrl_meas_reg(mode=bme280.MODE_NORMAL, osrs_p=bme280.OSRS_OVERSAMPLE_X_1, osrs_t=bme280.OSRS_OVERSAMPLE_X_1)
@@ -157,6 +164,14 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr_temperature = None
         self._lsm303agr_accel = None
         self._lsm303agr_magneto = None
+
+        # Stop any previous acquisitions
+        self._lsm303agr.set_accel_ctrl_reg1(accel_odr=lsm303agr.ACCEL_ODR_POWERDOWN)
+        self._lsm303agr.set_magneto_cfg_reg_a(magneto_odr=lsm303agr.MAGNETO_ODR_10HZ,
+                                              magneto_md=lsm303agr.MAGNETO_MD_IDLE0, lp=0, comp_temp_en=1)
+
+        # delay
+        pyb.delay(10)
 
         # Setup to take measurements
         # Temperature
@@ -173,7 +188,6 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr.set_magneto_cfg_reg_c(bdu=1)
 
         self._lsm303agr_awaiting_valid_measurements = True
-
 
         return True
 
@@ -232,31 +246,33 @@ class PebSensorPayload(SensorPayload):
 
     def get_latest_data_as_bytes(self) -> bytes:
         """Get the latest data as a bytes."""
-        # Format as packed floats
-        # https://docs.python.org/3/library/struct.html
-        packed_bytes = struct.pack("ffffffffff", self._bme280_temperature, self._bme280_pressure, self._bme280_humidity,
-                                   self._lsm303agr_accel[0], self._lsm303agr_accel[1], self._lsm303agr_accel[2],
-                                   self._lsm303agr_magneto[0], self._lsm303agr_magneto[1], self._lsm303agr_magneto[2],
-                                   self._lsm303agr_temperature, self._powermodule_vbatt)
-        # To unpack
-        #bme280_temperature, bme280_pressure, bme280_humidity, \
-        #lsm303agr_accel_x, lsm303agr_accel_y, lsm303agr_accel_z, \
-        #lsm303agr_magneto_x, lsm303agr_magneto_y, lsm303agr_magneto_z, \
-        #lsm303agr_temperature, vbatt = struct.unpack("ffffffffff", packed_bytes)
-
-        return packed_bytes
+        if self._lsm303agr_accel and self._lsm303agr_magneto:
+            # Format as packed floats
+            # https://docs.python.org/3/library/struct.html
+            packed_bytes = struct.pack("ffffffffff", self._bme280_temperature, self._bme280_pressure, self._bme280_humidity,
+                                       self._lsm303agr_accel[0], self._lsm303agr_accel[1], self._lsm303agr_accel[2],
+                                       self._lsm303agr_magneto[0], self._lsm303agr_magneto[1], self._lsm303agr_magneto[2],
+                                       self._lsm303agr_temperature, self._powermodule_vbatt)
+            # To unpack
+            # bme280_temperature, bme280_pressure, bme280_humidity, \
+            # lsm303agr_accel_x, lsm303agr_accel_y, lsm303agr_accel_z, \
+            # lsm303agr_magneto_x, lsm303agr_magneto_y, lsm303agr_magneto_z, \
+            # lsm303agr_temperature, vbatt = struct.unpack("ffffffffff", packed_bytes)
+            return packed_bytes
+        else:
+            return None
 
     def get_latest_data_as_json(self):
         """Get the latest data as a json object. Which can then be loaded into json.dump/dumps."""
         jason = {"bme280": {"temperature": self._bme280_temperature,
                             "pressure": self._bme280_pressure,
                             "humidity": self._bme280_humidity},
-                 "lsm303agr": {"accelerometer": {"x": self._lsm303agr_accel[0],
-                                                 "y": self._lsm303agr_accel[1],
-                                                 "z": self._lsm303agr_accel[2]},
-                               "magnetometer": {"x": self._lsm303agr_magneto[0],
-                                                "y": self._lsm303agr_magneto[1],
-                                                "z": self._lsm303agr_magneto[2]},
+                 "lsm303agr": {"accelerometer": {"x": self._lsm303agr_accel[0] if self._lsm303agr_accel else None,
+                                                 "y": self._lsm303agr_accel[1] if self._lsm303agr_accel else None,
+                                                 "z": self._lsm303agr_accel[2]} if self._lsm303agr_accel else None,
+                               "magnetometer": {"x": self._lsm303agr_magneto[0] if self._lsm303agr_magneto else None,
+                                                "y": self._lsm303agr_magneto[1] if self._lsm303agr_magneto else None,
+                                                "z": self._lsm303agr_magneto[2] if self._lsm303agr_magneto else None},
                                "temperature": self._lsm303agr_temperature},
                  "vbatt": self._powermodule_vbatt}
 
