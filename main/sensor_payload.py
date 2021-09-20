@@ -133,7 +133,7 @@ class PebSensorPayload(SensorPayload):
         self._powermodule_vbatt = powermodule.get_vbatt_reading()
 
         # delay
-        pyb.delay(10)
+        pyb.delay(50)
 
         self._bme280 = BME280(i2c)
         self._lsm303agr = LSM303AGR(i2c)
@@ -148,7 +148,7 @@ class PebSensorPayload(SensorPayload):
                                        osrs_t=bme280.OSRS_OVERSAMPLE_X_1)
 
         # delay
-        pyb.delay(10)
+        pyb.delay(50)
 
         # Setup to take measurements
         self._bme280.set_ctrl_hum_reg(osrs_h=bme280.OSRS_OVERSAMPLE_X_1)
@@ -159,7 +159,7 @@ class PebSensorPayload(SensorPayload):
         self._bme280_awaiting_valid_measurements = True
 
         # delay
-        pyb.delay(10)
+        pyb.delay(50)
 
         # Clear measurements
         self._lsm303agr_temperature = None
@@ -172,7 +172,7 @@ class PebSensorPayload(SensorPayload):
                                               magneto_md=lsm303agr.MAGNETO_MD_IDLE0, lp=0, comp_temp_en=1)
 
         # delay
-        pyb.delay(10)
+        pyb.delay(200)  # turn on time - 9.4ms + 1/ODR (100ms+)
 
         # Setup to take measurements
         # Temperature
@@ -190,6 +190,9 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr.set_magneto_cfg_reg_c(bdu=1)
 
         self._lsm303agr_awaiting_valid_measurements = True
+
+        # delay
+        pyb.delay(200)  # turn on time - 9.4ms + 1/ODR (100ms+)
 
         return True
 
