@@ -270,7 +270,7 @@ class PebSensorPayload(SensorPayload):
         #                           self._lsm303agr_magneto[0], self._lsm303agr_magneto[1], self._lsm303agr_magneto[2],
         #                           self._lsm303agr_temperature, self._powermodule_vbatt)
 
-        packed_bytes = struct.pack("ffffffffff", bme280_temperature, bme280_pressure, bme280_humidity,
+        packed_bytes = struct.pack("fffffffffff", bme280_temperature, bme280_pressure, bme280_humidity,
                                    lsm303agr_accel_x, lsm303agr_accel_y, lsm303agr_accel_z,
                                    lsm303agr_magneto_x, lsm303agr_magneto_y, lsm303agr_magneto_z,
                                    lsm303agr_temperature, vbatt)
@@ -279,7 +279,7 @@ class PebSensorPayload(SensorPayload):
         # bme280_temperature, bme280_pressure, bme280_humidity, \
         # lsm303agr_accel_x, lsm303agr_accel_y, lsm303agr_accel_z, \
         # lsm303agr_magneto_x, lsm303agr_magneto_y, lsm303agr_magneto_z, \
-        # lsm303agr_temperature, vbatt = struct.unpack("ffffffffff", packed_bytes)
+        # lsm303agr_temperature, vbatt = struct.unpack("fffffffffff", packed_bytes)
         return packed_bytes
 
     def get_latest_data_as_json(self):
