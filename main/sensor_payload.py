@@ -159,7 +159,7 @@ class PebSensorPayload(SensorPayload):
         self._bme280_awaiting_valid_measurements = True
 
         # delay
-        pyb.delay(50)
+        pyb.delay(100)
 
         # Clear measurements
         self._lsm303agr_temperature = None
@@ -180,7 +180,7 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr.set_temp_cfg_reg(en=1)
 
         # Accelerometer
-        self._lsm303agr.set_accel_ctrl_reg1(accel_odr=lsm303agr.ACCEL_ODR_1HZ)
+        self._lsm303agr.set_accel_ctrl_reg1(accel_odr=lsm303agr.ACCEL_ODR_25HZ)
         self._lsm303agr.set_accel_ctrl_reg4(accel_fs=lsm303agr.ACCEL_FS_2G, hr=0, bdu=1)  # bdu=1 needed for temperature
 
         # Magnetometer
@@ -192,7 +192,7 @@ class PebSensorPayload(SensorPayload):
         self._lsm303agr_awaiting_valid_measurements = True
 
         # delay
-        pyb.delay(200)  # turn on time - 9.4ms + 1/ODR (100ms+)
+        pyb.delay(400)  # turn on time -mag 9.4ms + 1/ODR (100ms+) -accel 7/ODR (280ms)
 
         return True
 
