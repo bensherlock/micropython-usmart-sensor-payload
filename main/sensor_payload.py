@@ -243,42 +243,43 @@ class PebSensorPayload(SensorPayload):
                 temperature = self._lsm303agr.get_temp_output_float()
                 self._lsm303agr_temperature = temperature
 
-            # Check the status register for new accelerometer data
-            status_reg, xda, yda, zda, zyxda, xor, yor, zor, zyxor = self._lsm303agr.get_accel_status_reg()
-            if zyxda:
-                x_val, y_val, z_val = self._lsm303agr.get_accel_outputs()
+            if self._lsm303agr_accel_count < self._lsm303agr_accel_max:
+                # Check the status register for new accelerometer data
+                status_reg, xda, yda, zda, zyxda, xor, yor, zor, zyxor = self._lsm303agr.get_accel_status_reg()
+                if zyxda:
+                    x_val, y_val, z_val = self._lsm303agr.get_accel_outputs()
 
-                self._lsm303agr_accel_x_acc += x_val  # accumulator
-                self._lsm303agr_accel_y_acc += y_val  # accumulator
-                self._lsm303agr_accel_z_acc += z_val  # accumulator
+                    self._lsm303agr_accel_x_acc += x_val  # accumulator
+                    self._lsm303agr_accel_y_acc += y_val  # accumulator
+                    self._lsm303agr_accel_z_acc += z_val  # accumulator
 
-                self._lsm303agr_accel_count += 1
+                    self._lsm303agr_accel_count += 1
 
-                if self._lsm303agr_accel_count >= self._lsm303agr_accel_max:
-                    self._lsm303agr_accel_x_acc = self._lsm303agr_accel_x_acc / self._lsm303agr_accel_count
-                    self._lsm303agr_accel_y_acc = self._lsm303agr_accel_y_acc / self._lsm303agr_accel_count
-                    self._lsm303agr_accel_z_acc = self._lsm303agr_accel_z_acc / self._lsm303agr_accel_count
+                    if self._lsm303agr_accel_count >= self._lsm303agr_accel_max:
 
-                    self._lsm303agr_accel = (self._lsm303agr_accel_x_acc, self._lsm303agr_accel_y_acc, self._lsm303agr_accel_z_acc)
+                        self._lsm303agr_accel = (
+                            self._lsm303agr_accel_x_acc / self._lsm303agr_accel_count,
+                            self._lsm303agr_accel_y_acc / self._lsm303agr_accel_count,
+                            self._lsm303agr_accel_z_acc / self._lsm303agr_accel_count)
 
-            # Check the status register for new magnetometer data
-            status_reg, xda, yda, zda, zyxda, xor, yor, zor, zyxor = self._lsm303agr.get_magneto_status_reg()
-            if zyxda:
-                x_val, y_val, z_val = self._lsm303agr.get_magneto_outputs()
+            if self._lsm303agr_magneto_count < self._lsm303agr_magneto_max:
+                # Check the status register for new magnetometer data
+                status_reg, xda, yda, zda, zyxda, xor, yor, zor, zyxor = self._lsm303agr.get_magneto_status_reg()
+                if zyxda:
+                    x_val, y_val, z_val = self._lsm303agr.get_magneto_outputs()
 
-                self._lsm303agr_magneto_x_acc += x_val  # accumulator
-                self._lsm303agr_magneto_y_acc += y_val  # accumulator
-                self._lsm303agr_magneto_z_acc += z_val  # accumulator
+                    self._lsm303agr_magneto_x_acc += x_val  # accumulator
+                    self._lsm303agr_magneto_y_acc += y_val  # accumulator
+                    self._lsm303agr_magneto_z_acc += z_val  # accumulator
 
-                self._lsm303agr_magneto_count += 1
+                    self._lsm303agr_magneto_count += 1
 
-                if self._lsm303agr_magneto_count >= self._lsm303agr_magneto_max:
+                    if self._lsm303agr_magneto_count >= self._lsm303agr_magneto_max:
 
-                    self._lsm303agr_magneto_x_acc = self._lsm303agr_magneto_x_acc / self._lsm303agr_magneto_count
-                    self._lsm303agr_magneto_y_acc = self._lsm303agr_magneto_y_acc / self._lsm303agr_magneto_count
-                    self._lsm303agr_magneto_z_acc = self._lsm303agr_magneto_z_acc / self._lsm303agr_magneto_count
-
-                    self._lsm303agr_magneto = (self._lsm303agr_magneto_x_acc, self._lsm303agr_magneto_y_acc, self._lsm303agr_magneto_z_acc)
+                        self._lsm303agr_magneto = (
+                            self._lsm303agr_magneto_x_acc / self._lsm303agr_magneto_count,
+                            self._lsm303agr_magneto_y_acc / self._lsm303agr_magneto_count,
+                            self._lsm303agr_magneto_z_acc / self._lsm303agr_magneto_count)
 
             if self._lsm303agr_temperature and self._lsm303agr_accel and self._lsm303agr_magneto:
                 self._lsm303agr_awaiting_valid_measurements = False
